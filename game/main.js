@@ -13,6 +13,7 @@ var Game = {
     var sqCounter = 0;                              //counter for adding data to css and splitting array
     this.currentPlayer = this.player1;               //setting current player to 1
 
+    console.log("CreateBoard", this.currentPlayer);
     for ( var i = 0; i < this.numRows; i++ ){        //looping through rows
       for ( var j = 0; j < this.numColumns; j++ ) {  //looping for columns
         var squareElement = $("<div></div>");
@@ -29,6 +30,7 @@ var Game = {
   },
 
   takeTurn: function(){
+ console.log("takeTurn", Game.currentPlayer);
      var square = $(this);
      var row = square.attr("data-row");                  //setting row indices
      var column = square.attr("data-column");            //setting column indices
@@ -36,28 +38,30 @@ var Game = {
      Game.squaresClicked++;                              //adding to turn counter after each turn
      square.css( { "background":"url("+Game.currentPlayer+".png)", "background-size":"cover" } );
      Game.board[ row ][ column ] = Game.currentPlayer;
+     Game.checkWin();
+    // Game.switchPlayer();
+  },
+
+  switchPlayer: function(){
+ console.log("switchPlayer start", this.currentPlayer);
+
      if ( Game.currentPlayer === Game.player1 ){         //switching players after each turn
-       Game.currentPlayer = Game.player2;
+        Game.currentPlayer = Game.player2;         //returns winning player for output
      }else{
        Game.currentPlayer = Game.player1;
      }
-   Game.checkWin();
-  },
+ console.log("switchPlayer end", this.currentPlayer);
 
-  checkForReset: function(){
-     if (Game.squaresClicked >= (Game.numRows * Game.numColumns)){  //checks if all squares flipped and resets board
-      setTimeout(function(){
-        alert( "No winner" );
-        Game.resetBoard();
-      }, 300);
-     }
   },
 
   resetBoard: function(){                                //resets board and game play
+  console.log("resetBoard", this.currentPlayer);
     var gameBoard = $('.board')                          //gets all board div
+    var heading = $('h1');
     var numSquares = ( this.numRows * this.numColumns );
     var allSquares = $('.square');
-
+    heading.text("Tic Tac Toe");
+    gameBoard.css( { "background":"white" } );
     for ( var i = 0; i < numSquares; i++ ){
         allSquares.eq(i).css( { "background":"white" } ); //clearing background
         allSquares.eq(i).on( "click" , this.takeTurn );      //re-enables event listener
@@ -69,13 +73,33 @@ var Game = {
     this.createBoard();                                //creates new board div
   },
 
-  threeInRow: function(row) {
-    if ( row.every( (val, i, arr) => val == arr[0] ) ) {  //checks all elements in array are equal
-       setTimeout(function(){
-        alert( "You have a match" );
-        Game.resetBoard();
-       }, 300);
+  checkForReset: function(){
+    var picRef = "losers";
+     if (Game.squaresClicked >= (Game.numRows * Game.numColumns)){  //checks if all squares flipped and resets board
+        Game.displayOutcome( "You're both...", picRef );  //displays to screen
+        setTimeout(function(){ Game.resetBoard(); }, 3000);
+     }
+  },
+
+ threeInRow: function(row) {
+  console.log("threeInRow", this.currentPlayer);
+  var picRef = this.currentPlayer;
+  if ( row.every( (val, i, arr) => val == arr[0] ) ) {  //checks all elements in array are equal
+        Game.displayOutcome( "Winner is...", picRef ); //displays to screen
+        setTimeout(function(){ Game.resetBoard(); }, 3000);
+   }else{
+    this.checkForReset();
    }
+ },
+
+ displayOutcome: function(message, imgRef){
+ console.log("displayOutcome", this.currentPlayer);
+    var boardElement = $('.board');                          //gets all board div
+    var heading = $('h1');
+    boardElement.children().remove();                     //removes square divs from board div
+    boardElement.css( { "background":"url("+imgRef+".png)", "background-size":"100%",
+    "background-repeat":"no-repeat" } );
+    heading.text(message);
  },
 
   checkRows: function(){                           //checks if rows in array have three matches
@@ -107,7 +131,6 @@ var Game = {
     var countBack = numCols;                         //count back - counts backwards to get the right indices for diagonal going up
     var line1 = [];                                  //line1, line2 variables - one for diagonal down and one for diagonal up
     var line2 = [];
-
     for (var i = 0; i < numCols; i++) {
          line1.push( board[i][i] );                   //incrementing diagonal down "\"
          line2.push( board[i][ countBack -= 1 ] );    //incrementing diagonal up "/"
@@ -117,10 +140,11 @@ var Game = {
   },
 
   checkWin:function(){
+    console.log("checkWin ", this.currentPlayer);
     this.checkRows();
     this.checkColumns();
     this.checkDiagonals();
-    this.checkForReset();                            //if no win check if board needs to be reset
+    this.switchPlayer();
   }
 
 };
