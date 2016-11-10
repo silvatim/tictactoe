@@ -93,7 +93,6 @@ var Game = {
   displayOutcome: function(message, imgRef){
     var board = $('.board');                          //gets all board div
     var displayMessage = $('.message');
-    console.log(displayMessage);
     Game.stopAnimation();
     board.children().remove();                     //removes square divs from board div
     board.css( { "background":"url("+imgRef+".png)", "background-size":"100%",
@@ -177,10 +176,10 @@ var Game = {
 
    if ( Game.boardSpeed >= 1.6 ){
       slowButton.on( 'click', Game.slowBoard );
-    }else if ( Game.boardSpeed < 1.6 && Game.boardSpeed >= 0.2 ) {
+    }else if ( Game.boardSpeed < 1.6 && Game.boardSpeed > 0.3 ) {
       fastButton.on( 'click', Game.speedUpBoard );
       slowButton.on( 'click', Game.slowBoard );
-    }else if ( Game.boardSpeed < 0.2 ) {
+    }else if ( Game.boardSpeed <= 0.3 ) {
       fastButton.on( 'click', Game.speedUpBoard );
     }
  },
