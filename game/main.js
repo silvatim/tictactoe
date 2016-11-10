@@ -18,6 +18,7 @@ var Game = {
     var fastButton = $('.fast');
     var message = $('.message');
     message.text("Player 1");
+    goButton.off('click', this.animateBoard );
     goButton.on('click', this.animateBoard );
     slowButton.on('click', this.slowBoard() );
     fastButton.on('click', this.speedUpBoard() );
@@ -69,7 +70,6 @@ var Game = {
         allSquares.eq(i).css( { "background":"white" } ); //clearing background
         allSquares.eq(i).on( "click" , this.takeTurn );      //re-enables event listener
     }
-    Game.stopAnimation();
     this.squaresClicked = 0;                             //resetting square counter
     this.boardSpeed = 0.6;
     this.currentPlayer = this.player1;                   //defaulting back to player1
