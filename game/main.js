@@ -1,3 +1,4 @@
+
 var Game = {
   board:[],                                       //empty board array
   player1:"0",
@@ -6,14 +7,22 @@ var Game = {
   numRows:3,                                      //board presets for number of rows and columns
   numColumns:3,
   squaresClicked: 0,                              //counts turns to reset board when all squares flipped
+  boardSpeed: 0.6,
 
  createBoard : function(){                        //dynamically creates each square and adds to game div
     var board = $('.board');
     var row = [];
     var sqCounter = 0;                              //counter for adding data to css and splitting array
+    var goButton = $('.go');
+    var slowButton = $('.slow');
+    var fastButton = $('.fast');
+    var message = $('.message');
+    message.text("Player 1");
+    goButton.on('click', this.animateBoard );
+    slowButton.on('click', this.slowBoard() );
+    fastButton.on('click', this.speedUpBoard() );
     this.currentPlayer = this.player1;               //setting current player to 1
 
-    console.log("CreateBoard", this.currentPlayer);
     for ( var i = 0; i < this.numRows; i++ ){        //looping through rows
       for ( var j = 0; j < this.numColumns; j++ ) {  //looping for columns
         var squareElement = $("<div></div>");
@@ -30,7 +39,6 @@ var Game = {
   },
 
   takeTurn: function(){
- console.log("takeTurn", Game.currentPlayer);
      var square = $(this);
      var row = square.attr("data-row");                  //setting row indices
      var column = square.attr("data-column");            //setting column indices
@@ -39,77 +47,83 @@ var Game = {
      square.css( { "background":"url("+Game.currentPlayer+".png)", "background-size":"cover" } );
      Game.board[ row ][ column ] = Game.currentPlayer;
      Game.checkWin();
-    // Game.switchPlayer();
   },
 
   switchPlayer: function(){
- console.log("switchPlayer start", this.currentPlayer);
-
+    var display = $('.message');
      if ( Game.currentPlayer === Game.player1 ){         //switching players after each turn
-        Game.currentPlayer = Game.player2;         //returns winning player for output
+       display.text("Player 2");
+       Game.currentPlayer = Game.player2;         //returns winning player for output
      }else{
+       display.text("Player 1");
        Game.currentPlayer = Game.player1;
      }
- console.log("switchPlayer end", this.currentPlayer);
-
   },
 
   resetBoard: function(){                                //resets board and game play
-  console.log("resetBoard", this.currentPlayer);
-    var gameBoard = $('.board')                          //gets all board div
-    var heading = $('h1');
+    var board = $('.board')                          //gets all board div
     var numSquares = ( this.numRows * this.numColumns );
     var allSquares = $('.square');
-    heading.text("Tic Tac Toe");
-    gameBoard.css( { "background":"white" } );
+    board.css( { "background":"white" } );
     for ( var i = 0; i < numSquares; i++ ){
         allSquares.eq(i).css( { "background":"white" } ); //clearing background
         allSquares.eq(i).on( "click" , this.takeTurn );      //re-enables event listener
     }
+    Game.stopAnimation();
     this.squaresClicked = 0;                             //resetting square counter
+    this.boardSpeed = 0.6;
     this.currentPlayer = this.player1;                   //defaulting back to player1
     this.board = [];                                   //resets board array
-    gameBoard.children().remove();                     //removes square divs from board div
+    board.children().remove();                     //removes square divs from board div
     this.createBoard();                                //creates new board div
+
   },
 
   checkForReset: function(){
     var picRef = "losers";
      if (Game.squaresClicked >= (Game.numRows * Game.numColumns)){  //checks if all squares flipped and resets board
-        Game.displayOutcome( "You're both...", picRef );  //displays to screen
+        Game.displayOutcome("You're both....", picRef);     //displays to screen
         setTimeout(function(){ Game.resetBoard(); }, 3000);
+        return true;
+     }else{
+       return false;
      }
   },
 
+  displayOutcome: function(message, imgRef){
+    var board = $('.board');                          //gets all board div
+    var displayMessage = $('.message');
+    console.log(displayMessage);
+    Game.stopAnimation();
+    board.children().remove();                     //removes square divs from board div
+    board.css( { "background":"url("+imgRef+".png)", "background-size":"100%",
+    "background-repeat":"no-repeat" } );
+    displayMessage.text(message);
+ },
+
  threeInRow: function(row) {
-  console.log("threeInRow", this.currentPlayer);
   var picRef = this.currentPlayer;
-  if ( row.every( (val, i, arr) => val == arr[0] ) ) {  //checks all elements in array are equal
-        Game.displayOutcome( "Winner is...", picRef ); //displays to screen
-        setTimeout(function(){ Game.resetBoard(); }, 3000);
+  var board = $('.board');
+  if ( row.every( (val, i, arr) => val == arr[0] ) ) {     //checks all elements in array are equal
+    Game.displayOutcome( "Winner is...", picRef );         //displays to screen
+    setTimeout(function(){ Game.resetBoard(); }, 3000);
+    return true;
    }else{
-    this.checkForReset();
+    return this.checkForReset();
    }
  },
 
- displayOutcome: function(message, imgRef){
- console.log("displayOutcome", this.currentPlayer);
-    var boardElement = $('.board');                          //gets all board div
-    var heading = $('h1');
-    boardElement.children().remove();                     //removes square divs from board div
-    boardElement.css( { "background":"url("+imgRef+".png)", "background-size":"100%",
-    "background-repeat":"no-repeat" } );
-    heading.text(message);
- },
-
-  checkRows: function(){                           //checks if rows in array have three matches
+ checkRows: function(){                           //checks if rows in array have three matches
     var board = this.board;
     var numRows = board.length;
 
     for ( var i = 0; i < numRows; i++ ) {
-      this.threeInRow( board[i] );                 //check if all items in row array match
+      if ( this.threeInRow( board[i] ) ) {
+        return true;
+      }                 //check if all items in row array match
     }
-  },
+  return false;
+ },
 
   checkColumns: function(){                        //checks if columns match going down through the different row indices,
     var board = this.board;                        // but with the same column indices
@@ -121,8 +135,11 @@ var Game = {
       for ( var j = 0; j < numberRows; j++ ) {         //looping through rows
         col.push( board[j][i] );                    //pushing output to col array
       }
-      this.threeInRow(col);                  //checking if all items in col array all match
+      if ( this.threeInRow(col) ){                   // checking if all items in col array all match
+        return true;
+      }
     }
+    return false;
   },
 
   checkDiagonals: function(){                       //checks board diagonally for matches
@@ -135,18 +152,91 @@ var Game = {
          line1.push( board[i][i] );                   //incrementing diagonal down "\"
          line2.push( board[i][ countBack -= 1 ] );    //incrementing diagonal up "/"
     }
-    this.threeInRow(line1);
-    this.threeInRow(line2);
+    if ( this.threeInRow(line1) || this.threeInRow(line2) ){
+       return true;
+    }
+    return false;
   },
 
-  checkWin:function(){
-    console.log("checkWin ", this.currentPlayer);
-    this.checkRows();
-    this.checkColumns();
-    this.checkDiagonals();
-    this.switchPlayer();
-  }
+ checkWin:function(){
+    if ( this.checkRows() === false ){
+      if ( this.checkColumns() === false ){
+        if ( this.checkDiagonals() === false ){
+           Game.switchPlayer();
+         }
+      }
+   }
+},
+
+  manageSpeed: function(speed){  //managing event handles not an easy task when they can accumulate
+   Game.boardSpeed = speed;       //speeds up or slows down movement depending on user buttons
+   var slowButton = $('.slow');
+   var fastButton = $('.fast');
+   slowButton.off( 'click', Game.slowBoard );
+   fastButton.off( 'click', Game.fastBoard );
+
+   if ( Game.boardSpeed >= 1.6 ){
+      slowButton.on( 'click', Game.slowBoard );
+    }else if ( Game.boardSpeed < 1.6 && Game.boardSpeed >= 0.2 ) {
+      fastButton.on( 'click', Game.speedUpBoard );
+      slowButton.on( 'click', Game.slowBoard );
+    }else if ( Game.boardSpeed < 0.2 ) {
+      fastButton.on( 'click', Game.speedUpBoard );
+    }
+ },
+
+  speedUpBoard: function(){
+   var newSpeed = parseFloat(Game.boardSpeed + 0.2);
+   Game.manageSpeed(newSpeed);
+  },
+
+  slowBoard: function(){
+   var newSpeed = parseFloat(Game.boardSpeed - 0.2);
+   Game.manageSpeed(newSpeed);
+  },
+
+ stopAnimation: function(){                    //stops board spinning and repositions to center
+  var board = $('.board');
+    board.stop();
+    board.removeClass('rotate');
+    board.css( {'top':'160px', 'left':'30%'} );
+ },
+
+  animateBoard: function(){                    //animates board
+    var board = $('.board');
+    var newPosition = Game.makeNewPosition();
+    var oldPosition = board.offset();
+    var speed = Game.calcSpeed([oldPosition.top, oldPosition.left], newPosition);
+
+    board.animate({ top: newPosition[0], left: newPosition[1] }, speed, function(){
+    board.addClass('rotate');
+    Game.animateBoard();
+    });
+  },
+
+  makeNewPosition: function(){                   //calculates a random position for animation
+    var h = $(window).height() - 400;
+    var w = $(window).width() - 150;
+    var nh = Math.floor(Math.random() * h);
+    var nw = Math.floor(Math.random() * w);
+
+    return [nh,nw];
+ },
+
+  calcSpeed: function(prev, next) {                     //calculates speed of movement
+   var x = Math.abs(prev[1] - next[1]);
+   var y = Math.abs(prev[0] - next[0]);
+   var greatest = x > y ? x : y;
+   var speedModifier = this.boardSpeed;
+   var speed = Math.ceil(greatest/speedModifier);
+   return speed;
+ }
 
 };
 
 Game.createBoard();
+
+
+
+
+
