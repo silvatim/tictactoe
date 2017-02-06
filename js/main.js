@@ -1,51 +1,51 @@
 
 var Game = {
-  board:[],                                       //empty board array
-  player1:"0",
-  player2:"X",
-  currentPlayer:"",
-  numRows:3,                                      //board presets for number of rows and columns
-  numColumns:3,
-  squaresClicked: 0,                              //counts turns to reset board when all squares flipped
+  board: [],                                       // empty board array
+  player1: '0',
+  player2: 'X',
+  currentPlayer: '',
+  numRows: 3,                                      // board presets for number of rows and columns
+  numColumns: 3,
+  squaresClicked: 0,                              // counts turns to reset board when all squares flipped
   boardSpeed: 0.6,
 
- createBoard : function(){                        //dynamically creates each square and adds to game div
+ createBoard : function () {                        // dynamically creates each square and adds to game div
     var board = $('.board');
     var row = [];
-    var sqCounter = 0;                              //counter for adding data to css and splitting array
+    var sqCounter = 0;                              // counter for adding data to css and splitting array
     var goButton = $('.go');
     var slowButton = $('.slow');
     var fastButton = $('.fast');
     var message = $('.message');
-    message.text("Player 1");
-    goButton.off('click', this.animateBoard );
-    goButton.on('click', this.animateBoard );
-    slowButton.on('click', this.slowBoard() );
-    fastButton.on('click', this.speedUpBoard() );
+    message.text('Player 1');
+    goButton.off('click', this.animateBoard);
+    goButton.on('click', this.animateBoard);
+    slowButton.on('click', this.slowBoard());
+    fastButton.on('click', this.speedUpBoard());
     this.currentPlayer = this.player1;               //setting current player to 1
 
     for ( var i = 0; i < this.numRows; i++ ){        //looping through rows
-      for ( var j = 0; j < this.numColumns; j++ ) {  //looping for columns
-        var squareElement = $("<div></div>");
-        squareElement.attr( "data-row" , i );         //adding line position to data-row
-        squareElement.addClass( "square square" + sqCounter );
-        squareElement.on( "click" , this.takeTurn );   //adding event listener to square element
-        board.append( squareElement );
-        squareElement.attr( "data-column", j );        //adding column position to data-column
+      for ( var j = 0; j < this.numColumns; j++) {  //looping for columns
+        var squareElement = $('<div></div>');
+        squareElement.attr( 'data-row', i);         //adding line position to data-row
+        squareElement.addClass('square square' + sqCounter);
+        squareElement.on('click' , this.takeTurn);   //adding event listener to square element
+        board.append(squareElement);
+        squareElement.attr('data-column', j);        //adding column position to data-column
         sqCounter++;
         row.push(sqCounter);                          //pushing all 'squares' to array row after counter so starts from 1
         }                                             // ! Winning is based on matching squares and player1 === 0 .
-        this.board.push( row.splice( 0 , this.numRows ) ); //spliting array row into multiple arrays and pushing to board array
+        this.board.push( row.splice(0 , this.numRows)); //spliting array row into multiple arrays and pushing to board array
       }
   },
 
-  takeTurn: function(){
+  takeTurn: function () {
      var square = $(this);
-     var row = square.attr("data-row");                  //setting row indices
-     var column = square.attr("data-column");            //setting column indices
-     square.off( "click" , Game.takeTurn );              //removes event listener after clicked
+     var row = square.attr('data-row');                  //setting row indices
+     var column = square.attr('data-column');            //setting column indices
+     square.off( 'click' , Game.takeTurn );            //removes event listener after clicked
      Game.squaresClicked++;                              //adding to turn counter after each turn
-     square.css( { "background":"url("+Game.currentPlayer+".png)", "background-size":"cover" } );
+     square.css( { 'background':'url(' + Game.currentPlayer + '.png)', 'background-size':'cover' } );
      Game.board[ row ][ column ] = Game.currentPlayer;
      Game.checkWin();
   },
@@ -62,7 +62,7 @@ var Game = {
   },
 
   resetBoard: function(){                                //resets board and game play
-    var board = $('.board')                          //gets all board div
+    var board = $('.board');                          //gets all board div
     var numSquares = ( this.numRows * this.numColumns );
     var allSquares = $('.square');
     board.css( { "background":"white" } );
@@ -103,7 +103,7 @@ var Game = {
  threeInRow: function(row) {
   var picRef = this.currentPlayer;
   var board = $('.board');
-  if ( row.every( (val, i, arr) => val == arr[0] ) ) {     //checks all elements in array are equal
+  if ( row.every(function (val, i, arr) { return val == arr[0]; }) ) {     //checks all elements in array are equal
     Game.displayOutcome( "Winner is...", picRef );         //displays to screen
     setTimeout(function(){ Game.resetBoard(); }, 3000);
     return true;
@@ -157,15 +157,15 @@ var Game = {
     return false;
   },
 
- checkWin:function(){
+ checkWin: function(){
     if ( this.checkRows() === false ){
       if ( this.checkColumns() === false ){
         if ( this.checkDiagonals() === false ){
            Game.switchPlayer();
          }
-      }
-   }
-},
+       }
+     }
+  },
 
   manageSpeed: function(speed){  //managing event handles not an easy task when they can accumulate
    Game.boardSpeed = speed;       //speeds up or slows down movement depending on user buttons
@@ -214,12 +214,12 @@ var Game = {
   },
 
   makeNewPosition: function(){                   //calculates a random position for animation
-    var h = $(window).height() - 400;
-    var w = $(window).width() - 150;
-    var nh = Math.floor(Math.random() * h);
-    var nw = Math.floor(Math.random() * w);
+    var height = $(window).height() - 400;
+    var width = $(window).width() - 150;
+    var newHeight = Math.floor(Math.random() * height);
+    var newWidth = Math.floor(Math.random() * width);
 
-    return [nh,nw];
+    return [newHeight,newWidth];
  },
 
   calcSpeed: function(prev, next) {                     //calculates speed of movement
@@ -234,6 +234,3 @@ var Game = {
 };
 
 Game.createBoard();
-
-
-
