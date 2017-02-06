@@ -45,7 +45,7 @@ var Game = {
      var column = square.attr('data-column');            //setting column indices
      square.off( 'click' , Game.takeTurn );            //removes event listener after clicked
      Game.squaresClicked++;                              //adding to turn counter after each turn
-     square.css( { 'background':'url(' + Game.currentPlayer + '.png)', 'background-size':'cover' } );
+     square.css( { 'background':'url(../css/' + Game.currentPlayer + '.png)', 'background-size':'cover' } );
      Game.board[ row ][ column ] = Game.currentPlayer;
      Game.checkWin();
   },
